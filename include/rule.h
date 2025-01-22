@@ -22,7 +22,6 @@
 #include "c1p.h"
 #endif
 
-
 /* Arbitrary Mask Rule */
 struct MRULE {
   unsigned num;
@@ -168,6 +167,55 @@ void set_address(mrule* r, int x1, int x2, int x3, int x4, int xp, int flag) {
   }
 }
 
+void convert(int l, int r, int a, int b, list_pair_unsigned* L) {
+  if (l == a && r == b) {
+    list_pair_unsigned_insert(L, a, b);
+  } else {
+    int m = (a+b-1)/2;
+    int n = (a+b+1)/2;
+    if (r <= m) {
+      convert(l, r, a, m, L);
+    } else if (l <= m && n <= r) {
+      convert(l, m, a, m, L);
+      convert(n, r, n, b, L);
+    } else {
+      convert(l, r, n, b, L);
+    }
+  }
+}
+
+list_string* prepare_port_string(int low, int high) {
+  list_string* S = (list_string*)calloc(1, sizeof(list_string));
+  list_pair_unsigned* L = (list_pair_unsigned*)calloc(1, sizeof(list_pair_unsigned));
+  convert(low, high, 0, (1 << 16)-1, L);
+  /* list_pair_unsigned_print(L); */
+  /* putchar('\n'); */
+  int LEN = 16;
+  char buf[LEN+1];
+  buf[LEN] = '\0';
+  for (list_pair_unsigned_cell* p = L->head; p != NULL; p = p->next) {
+    int num = p->pu.first;
+    for (int i = 0; i < LEN; ++i) {
+      buf[LEN-i-1] = '0' + (num & 1);
+      num = (num >> 1);
+    }
+    int diff = p->pu.second - p->pu.first + 1;
+    int mask = 0;
+    while (diff > 1) {
+      mask += 1;
+      diff = (diff >> 1);
+    }
+    for (int i = 0; i < mask; ++i) {
+      buf[LEN-i-1] = '*';
+    }
+    list_string_insert(S, buf);
+    /* printf("(%u, %u): %s\n", p->pu.first, p->pu.second, buf); */
+  }
+  
+  list_pair_unsigned_clear(L); L = NULL;
+  return S;
+}
+
 list_mrule* read_classbench_rule_list(char* rule_file_name) {
   FILE* fp;
   if (NULL == (fp = fopen(rule_file_name, "r"))) {
@@ -188,13 +236,33 @@ list_mrule* read_classbench_rule_list(char* rule_file_name) {
     mrule* r = (mrule*)calloc(1, sizeof(mrule));
     r->num = i;
     r->cond = (char*)malloc((w+1)*sizeof(char));
+    r->cond[w] = '\0';
+	
     set_address(r, s1, s2, s3, s4, sp, 0);
     set_address(r, d1, d2, d3, d4, dp, 1);
+    /* set_protocol(p1, p2); */
+    list_string* PS = prepare_port_string(spl, spr);
+    list_string* PD = prepare_port_string(dpl, dpr);
     
-    r->cond[w] = '\0';
-    list_mrule_add_rear(R, r);
-    printf("%s", buf);
-    printf("%s\n", r->cond);
+
+    for (list_string_cell* ps = PS->head; ps != NULL; ps = ps->next) {
+      for (list_string_cell* pd = PD->head; pd != NULL; pd = pd->next) {
+	for (int j = 0; j < 16; ++j) {
+	  r->cond[64+j] = ps->key[j];
+	}
+	for (int j = 0; j < 16; ++j) {
+	  r->cond[80+j] = pd->key[j];
+	}
+	printf("%s\n", r->cond);
+	list_mrule_add_rear(R, r);
+      }
+    }
+    
+    list_string_clear(PD);
+    list_string_clear(PS);
+    
+    /* printf("%s", buf); */
+    /* printf("%s\n", r->cond); */
   }
 
 

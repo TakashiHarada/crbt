@@ -167,6 +167,25 @@ void set_address(mrule* r, int x1, int x2, int x3, int x4, int xp, int flag) {
   }
 }
 
+void set_protocol(mrule* r, int p1, int p2) {
+  /* printf("%d/%d\n", p1, p2); */
+  int LEN = 104;
+  for (int i = 0; i < 8; ++i) {
+    /* printf("%d", p1 & 1); */
+    r->cond[LEN-i-1] = '0' + (p1 & 1);
+    p1 = p1 >> 1;
+  }
+  /* putchar('\n'); */
+  for (int i = 0; i < 8; ++i) {
+    /* printf("%d", p2 & 1); */
+    if ((p2 & 1) == 0) {
+      r->cond[LEN-i-1] = '*';
+    }
+    p2 = p2 >> 1;
+  }
+  /* putchar('\n'); */
+}
+
 void convert(int l, int r, int a, int b, list_pair_unsigned* L) {
   if (l == a && r == b) {
     list_pair_unsigned_insert(L, a, b);
@@ -229,10 +248,12 @@ list_mrule* read_classbench_rule_list(char* rule_file_name) {
   char buf[LENGTH];
 
   for (unsigned i = 1; NULL != fgets(buf, LENGTH, fp); ++i) {
-    int s1, s2, s3, s4, sp, d1, d2, d3, d4, dp, spl, spr, dpl, dpr, p1, p2;
-    sscanf(buf, "@%d.%d.%d.%d/%d\t%d.%d.%d.%d/%d\t%d : %d\t%d : %d\t%d/%d",
-	   &s1, &s2, &s3, &s4, &sp, &d1, &d2, &d3, &d4, &dp, &spl, &spr, &dpl, &dpr, &p1, &p2);
+    int s1, s2, s3, s4, sp, d1, d2, d3, d4, dp, spl, spr, dpl, dpr, p1, p2, flag, flag_mask;
+    sscanf(buf, "@%d.%d.%d.%d/%d\t%d.%d.%d.%d/%d\t%d : %d\t%d : %d\t%x/%x\t%x/%x",
+	   &s1, &s2, &s3, &s4, &sp, &d1, &d2, &d3, &d4, &dp, &spl, &spr, &dpl, &dpr, &p1, &p2, &flag, &flag_mask);
 
+    /* printf("%s", buf); */
+    
     mrule* r = (mrule*)calloc(1, sizeof(mrule));
     r->num = i;
     r->cond = (char*)malloc((w+1)*sizeof(char));
@@ -240,10 +261,13 @@ list_mrule* read_classbench_rule_list(char* rule_file_name) {
 	
     set_address(r, s1, s2, s3, s4, sp, 0);
     set_address(r, d1, d2, d3, d4, dp, 1);
-    /* set_protocol(p1, p2); */
+    set_protocol(r, p1, p2);
+
+    /* for (int i = 64; i < 96; ++i) r->cond[i] = '?'; */
+    /* printf("%s\n", r->cond); */
+    
     list_string* PS = prepare_port_string(spl, spr);
     list_string* PD = prepare_port_string(dpl, dpr);
-    
 
     for (list_string_cell* ps = PS->head; ps != NULL; ps = ps->next) {
       for (list_string_cell* pd = PD->head; pd != NULL; pd = pd->next) {
@@ -253,28 +277,14 @@ list_mrule* read_classbench_rule_list(char* rule_file_name) {
 	for (int j = 0; j < 16; ++j) {
 	  r->cond[80+j] = pd->key[j];
 	}
-	printf("%s\n", r->cond);
+	/* printf("%s\n", r->cond); */
 	list_mrule_add_rear(R, r);
       }
     }
     
     list_string_clear(PD);
     list_string_clear(PS);
-    
-    /* printf("%s", buf); */
-    /* printf("%s\n", r->cond); */
   }
-
-
-  /* unsigned i; */
-  /* for (i = 1; -1 != (read = getline(&line, &len, fp)); ++i) { */
-  /*   r = (mrule*)calloc(1, sizeof(mrule)); */
-  /*   r->num = i; */
-  /*   r->cond = (char*)malloc(w*sizeof(char)); */
-  /*   strcpy(r->cond, line); */
-  /*   r->cond[w-1] = '\0'; */
-  /*   list_mrule_add_rear(R, r); */
-  /* } */
 
   fclose(fp);
   

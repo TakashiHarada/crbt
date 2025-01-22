@@ -34,9 +34,9 @@ int main(int argc, char** argv) {
     /* printf("Input Rule List and Header List Forms are Class Bench\n"); */
     H = read_classbench_header_list(argv[3]);
     /* print_header_list(H); */
-
+    
     R = read_classbench_rule_list(argv[2]);
-    list_mrule_print(R);
+    /* list_mrule_print(R); */
   }
   else {
     H = read_header_list(argv[2]);
@@ -48,8 +48,8 @@ int main(int argc, char** argv) {
   
   struct timespec s, e;
   clock_gettime(CLOCK_REALTIME, &s);
-  do_linear_search(R, H);
-  /* unsigned* results_of_linear_search = do_linear_search_with_results(R, H); */
+  /* do_linear_search(R, H); */
+  unsigned* results_of_linear_search = do_linear_search_with_results(R, H);
   clock_gettime(CLOCK_REALTIME, &e);
   if (e.tv_nsec < s.tv_nsec) {
     printf("Linear Search Time = %10ld.%09ld\n", e.tv_sec - s.tv_sec - 1, e.tv_nsec + 1000000000 - s.tv_nsec);
@@ -74,8 +74,8 @@ int main(int argc, char** argv) {
   printf("Memory Usage = %ld\n", getrusageMem());
 
   clock_gettime(CLOCK_REALTIME, &s);
-  do_crbt_search(C, RR->size, R->size, H);
-  /* unsigned* results_of_crbt_search = do_crbt_search_with_results(C, RR->size, R->size, H); */
+  /* do_crbt_search(C, RR->size, R->size, H); */
+  unsigned* results_of_crbt_search = do_crbt_search_with_results(C, RR->size, R->size, H);
   clock_gettime(CLOCK_REALTIME, &e);
   if (e.tv_nsec < s.tv_nsec) {
     printf("CRBT Search Time   = %10ld.%09ld\n", e.tv_sec - s.tv_sec - 1, e.tv_nsec + 1000000000 - s.tv_nsec);
@@ -83,10 +83,10 @@ int main(int argc, char** argv) {
     printf("CRBT Search Time   = %10ld.%09ld\n", e.tv_sec - s.tv_sec, e.tv_nsec - s.tv_nsec);
   }    
 
-  /* if (policy_violation(results_of_linear_search, results_of_crbt_search, H)) */
-  /*   printf("ERROR: plicy violation occurs!!\n"); */
-  /* free(results_of_linear_search); */
-  /* free(results_of_crbt_search); */
+  if (policy_violation(results_of_linear_search, results_of_crbt_search, H))
+    printf("ERROR: plicy violation occurs!!\n");
+  free(results_of_linear_search);
+  free(results_of_crbt_search);
 
   list_mrulelist_clear(RR); RR = NULL;
   list_mrule_clear(R); R = NULL;

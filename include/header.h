@@ -58,8 +58,7 @@ header* read_classbench_header_list(char* header_file_name) {
   int LEN = 255;
   char buf[LEN];
 
-  int number_of_headers = 0;
-  while (NULL != fgets(buf, LEN, fp)) ++number_of_headers;
+  while (NULL != fgets(buf, LEN, fp)) ++num_of_headers;
 
   header* H = (header*)calloc(num_of_headers, sizeof(header));
 
@@ -85,10 +84,10 @@ header* read_classbench_header_list(char* header_file_name) {
     }
     /* strcpy(H[i].string, line); */
     H[i].string[HEADER_LENGTH] = '\0';
-    /* printf("%s\n", H[i].string); */
+    printf("%s\n", H[i].string);
   }
 
-  fclose(fp);
+  /* fclose(fp); */
   return H;
 }
 

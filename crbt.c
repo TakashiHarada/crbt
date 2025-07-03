@@ -72,7 +72,6 @@ int main(int argc, char** argv) {
 
   printf("The number of rule lists = %u\n", RR->size);
 
-  // comment start
   /* crbt C = mk_crbt(RR, R->size); */
   /* crbt C = mk_crbt_circ1p(RR, R->size); */
   crbt C = mk_crbt_circ1p(RR, DEFAULT_RULE_NUMBER);
@@ -94,8 +93,6 @@ int main(int argc, char** argv) {
   free(results_of_linear_search);
   free(results_of_crbt_search);
 
-  // comment end
-  
   list_mrulelist_clear(RR); RR = NULL;
   list_mrule_clear(R); R = NULL;
   free_header_list(H); H = NULL;

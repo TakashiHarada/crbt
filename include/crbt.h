@@ -334,7 +334,7 @@ srbt** mk_backbone_rbt_circ1p(list_mrule* R, const unsigned n) {
 srbt** mk_srbt_circ1p(list_mrule* R, const unsigned n) {
   srbt** srbt = mk_backbone_rbt_circ1p(R, n);
   const unsigned w = strlen(R->head->key->cond);
-  /* ordprint(R->sigma, w); */
+  /* order_print(R->sigma, w); */
   /* list_mrule_print_with_order(R); putchar('\n'); */
   /* srbts_print(srbt, w); */
 

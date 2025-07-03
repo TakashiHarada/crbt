@@ -28,6 +28,7 @@ int main(int argc, char** argv) {
 
   header* H;
   list_mrule* R;
+  int DEFAULT_RULE_NUMBER;
   
   if (!strcmp(argv[1], "-c")) {
     /* IMPLEMENT */
@@ -45,7 +46,8 @@ int main(int argc, char** argv) {
     R = read_mrule_list(argv[1]);
     /* list_mrule_print(R); */
   }
-  
+  DEFAULT_RULE_NUMBER = R->last->key->num;
+    
   struct timespec s, e;
   clock_gettime(CLOCK_REALTIME, &s);
   /* do_linear_search(R, H); */
@@ -69,25 +71,31 @@ int main(int argc, char** argv) {
   }    
 
   printf("The number of rule lists = %u\n", RR->size);
+
+  // comment start
   /* crbt C = mk_crbt(RR, R->size); */
-  crbt C = mk_crbt_circ1p(RR, R->size);
+  /* crbt C = mk_crbt_circ1p(RR, R->size); */
+  crbt C = mk_crbt_circ1p(RR, DEFAULT_RULE_NUMBER);
   printf("Memory Usage = %ld\n", getrusageMem());
 
   clock_gettime(CLOCK_REALTIME, &s);
   /* do_crbt_search(C, RR->size, R->size, H); */
-  unsigned* results_of_crbt_search = do_crbt_search_with_results(C, RR->size, R->size, H);
+  /* unsigned* results_of_crbt_search = do_crbt_search_with_results(C, RR->size, R->size, H); */
+  unsigned* results_of_crbt_search = do_crbt_search_with_results(C, RR->size, DEFAULT_RULE_NUMBER, H);
   clock_gettime(CLOCK_REALTIME, &e);
   if (e.tv_nsec < s.tv_nsec) {
     printf("CRBT Search Time   = %10ld.%09ld\n", e.tv_sec - s.tv_sec - 1, e.tv_nsec + 1000000000 - s.tv_nsec);
   } else {
     printf("CRBT Search Time   = %10ld.%09ld\n", e.tv_sec - s.tv_sec, e.tv_nsec - s.tv_nsec);
-  }    
-
+  }
+  
   if (policy_violation(results_of_linear_search, results_of_crbt_search, H))
     printf("ERROR: plicy violation occurs!!\n");
   free(results_of_linear_search);
   free(results_of_crbt_search);
 
+  // comment end
+  
   list_mrulelist_clear(RR); RR = NULL;
   list_mrule_clear(R); R = NULL;
   free_header_list(H); H = NULL;

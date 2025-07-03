@@ -84,7 +84,7 @@ header* read_classbench_header_list(char* header_file_name) {
     }
     /* strcpy(H[i].string, line); */
     H[i].string[HEADER_LENGTH] = '\0';
-    printf("%s\n", H[i].string);
+    /* printf("%s\n", H[i].string); */
   }
 
   /* fclose(fp); */

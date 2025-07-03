@@ -29,6 +29,10 @@ struct MRULE {
 };
 typedef struct MRULE mrule;
 
+void mrule_print(mrule* r) {
+  printf("%d %s\n", r->num, r->cond);
+}
+
 mrule* mrule_copy(mrule* r) {
   mrule* copy = (mrule*)calloc(1, sizeof(mrule));
   copy->num = r->num;
@@ -92,7 +96,9 @@ unsigned linear_search(list_mrule* R, header h) {
   for (p = R->head; NULL != p; p = p->next)
     if (does_match_header(p->key, h))
       return p->key->num;
-  return R->size + 1;
+  p = R->last;
+  // return R->size + 1;
+  return R->last->key->num + 1;
 }
 
 void do_linear_search(list_mrule* R, header* H) {
@@ -139,6 +145,15 @@ list_mrule* mk_new_list_mrule(mrule* r) {
 
 list_mrule* list_mrule_copy(list_mrule* R) {
   list_mrule* R2 = (list_mrule*)calloc(1, sizeof(list_mrule));
+  if (NULL == R->sigma) {
+    R2->sigma = NULL;
+  } else {
+    unsigned const l = strlen(R->head->key->cond);
+    R2->sigma = (unsigned*)calloc(l, sizeof(unsigned));
+    for (unsigned i = 0; i < l; ++i) {
+      R2->sigma[i] = R->sigma[i];
+    }
+  }
   list_mrule_cell* p;
   for (p = R->head; NULL != p; p = p->next) { list_mrule_add_rear(R2, p->key); }
   R2->size = R->size;
@@ -338,6 +353,13 @@ void list_mrule_print(list_mrule* R) {
 
 void list_mrule_print_with_order(list_mrule* R) {
   if (NULL == R->sigma) { list_mrule_print(R); return ; }
+
+  /* printf("%ld\n", strlen(R->head->key->cond)); */
+  /* for (unsigned i = 0; i < strlen(R->head->key->cond); ++i) { */
+  /*   printf("%d ", R->sigma[i]); */
+  /* } */
+  /* putchar('\n'); */
+  
   list_mrule_cell* p;
   const unsigned d = (unsigned)floor(log10(R->size)) + 1;
   for (p = R->head; NULL != p; p = p->next) {
